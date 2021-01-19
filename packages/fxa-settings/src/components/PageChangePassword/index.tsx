@@ -19,8 +19,9 @@ import PasswordValidator from './PasswordValidator';
 import { ReactComponent as ValidIcon } from './valid.svg';
 import { ReactComponent as InvalidIcon } from './invalid.svg';
 import { ReactComponent as UnsetIcon } from './unset.svg';
-import { AuthUiErrors } from '../../lib/auth-errors';
+import { AuthUiErrors } from '../../lib/auth-errors/auth-errors';
 import { gql } from '@apollo/client';
+import { useLocalization } from '@fluent/react';
 
 type FormData = {
   oldPassword: string;
@@ -72,6 +73,7 @@ export const PageChangePassword = ({}: RouteComponentProps) => {
   const [newPasswordErrorText, setNewPasswordErrorText] = useState<string>();
   const { primaryEmail } = useAccount();
   const navigate = useNavigate();
+  const {l10n} = useLocalization();
   const changePassword = usePasswordChanger({
     onSuccess: (response) => {
       logViewEvent(settingsViewName, 'change-password.success');
@@ -101,7 +103,8 @@ export const PageChangePassword = ({}: RouteComponentProps) => {
     onError: (e) => {
       if (e.errno === 103) {
         // incorrect password
-        setCurrentPasswordErrorText(e.message);
+        const localizedError = l10n.getString(`auth-error-${e.errno}`)
+        setCurrentPasswordErrorText(localizedError);
         setValue('oldPassword', '');
       } else {
         setAlertText(e.message);
@@ -112,7 +115,8 @@ export const PageChangePassword = ({}: RouteComponentProps) => {
   const passwordValidator = new PasswordValidator(primaryEmail.email);
   const onFormSubmit = ({ oldPassword, newPassword }: FormData) => {
     if (oldPassword === newPassword) {
-      setNewPasswordErrorText(AuthUiErrors.PASSWORDS_MUST_BE_DIFFERENT.message);
+      const localizedError = l10n.getString(`auth-error-${AuthUiErrors.PASSWORDS_MUST_BE_DIFFERENT.errno}`)
+      setNewPasswordErrorText(localizedError);
       return;
     }
     changePassword.execute(
@@ -122,6 +126,7 @@ export const PageChangePassword = ({}: RouteComponentProps) => {
       sessionToken()!
     );
   };
+
 
   return (
     <FlowContainer title="Change Password">
