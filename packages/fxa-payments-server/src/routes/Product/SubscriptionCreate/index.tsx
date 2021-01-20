@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { Stripe, StripeCardElement, StripeError } from '@stripe/stripe-js';
 import { Plan, Profile, Customer } from '../../../store/types';
 import { State as ValidatorState } from '../../../lib/validator';
@@ -127,6 +128,11 @@ export const SubscriptionCreate = ({
     ]
   );
 
+  const PayPalButton = paypal.Buttons.driver('react', {
+    React,
+    ReactDOM,
+  });
+
   return (
     <>
       <Header {...{ profile }} />
@@ -164,7 +170,7 @@ export const SubscriptionCreate = ({
 
           {config.featureFlags.usePaypalUIByDefault ? (
             // To be updated in issue #7097
-            <div id="paypal-button-container"></div>
+            <PayPalButton />
           ) : null}
 
           <PaymentForm

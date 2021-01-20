@@ -325,6 +325,21 @@ const conf = convict({
       env: 'STATSD_PREFIX',
     },
   },
+  paypal: {
+    clientId: {
+      // TODO Use Mozilla PayPal Client ID once it's available
+      default: '',
+      doc: 'The PayPal client ID',
+      env: 'PAYPAL_CLIENT_ID',
+      format: String,
+    },
+    scriptUrl: {
+      default: 'https://www.paypal.com/sdk/js',
+      doc: 'The PayPal script url',
+      env: 'PAYPAL_SCRIPT_URL',
+      format: 'url',
+    },
+  },
   stripe: {
     apiKey: {
       default: 'pk_test_VNpCidC0a2TJJB3wqXq7drhN00sF8r9mhs',

@@ -55,6 +55,10 @@ module.exports = () => {
   // TODO: implement better feature flag support - i.e. with types, from redis
   const FEATURE_FLAGS = config.get('featureFlags') || {};
 
+  const PAYPAL_SCRIPT_CONFIG = {
+    __PAYPAL_CLIENT_ID__: config.get('paypal.clientId'),
+  };
+
   // Each of these config values (e.g., 'servers.content') will be exposed as the given
   // variable to the client/browser (via fxa-content-server/config)
   const CLIENT_CONFIG = {
@@ -193,8 +197,21 @@ module.exports = () => {
     return result;
   }
 
-  function injectHtmlConfig(html, config, featureFlags) {
-    return injectMetaContent(html, {
+  // TODO: better function name
+  // TODO: Consider making DRYer with injectMetaContent
+  function injectHtmlTemplateStringValue(html, kvMap) {
+    let result = html;
+
+    Object.keys(kvMap).forEach((k) => {
+      result = result.replace(k, encodeURIComponent(kvMap[k]));
+    });
+
+    return result;
+  }
+
+  function injectHtmlTemplateValue(html, config, featureFlags, paypalConfig) {
+    const result = injectHtmlTemplateStringValue(html, paypalConfig);
+    return injectMetaContent(result, {
       __SERVER_CONFIG__: config,
       __FEATURE_FLAGS__: featureFlags,
     });
@@ -225,7 +242,12 @@ module.exports = () => {
             return proxyResData;
           }
           const body = proxyResData.toString('utf8');
-          return injectHtmlConfig(body, CLIENT_CONFIG, FEATURE_FLAGS);
+          return injectHtmlTemplateValue(
+            body,
+            CLIENT_CONFIG,
+            FEATURE_FLAGS,
+            PAYPAL_SCRIPT_CONFIG
+          );
         },
       })
     );
@@ -248,7 +270,12 @@ module.exports = () => {
       // FIXME: should set ETag, Not-Modified:
       app.get(route, (req, res) => {
         res.send(
-          injectHtmlConfig(STATIC_INDEX_HTML, CLIENT_CONFIG, FEATURE_FLAGS)
+          injectHtmlTemplateValue(
+            STATIC_INDEX_HTML,
+            CLIENT_CONFIG,
+            FEATURE_FLAGS,
+            PAYPAL_SCRIPT_CONFIG
+          )
         );
       });
     });

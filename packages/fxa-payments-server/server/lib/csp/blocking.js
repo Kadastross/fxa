@@ -31,6 +31,8 @@ module.exports = function (config) {
   const PUBLIC_URL = config.get('listen.publicUrl');
   const HOT_RELOAD_WEBSOCKET = PUBLIC_URL.replace(/^http/, 'ws');
 
+  const PAYPAL_SCRIPT_URL = getOrigin(config.get('paypal.scriptUrl'));
+
   const STRIPE_API_URL = getOrigin(config.get('stripe.apiUrl'));
   const STRIPE_HOOKS_URL = getOrigin(config.get('stripe.hooksUrl'));
   const STRIPE_SCRIPT_URL = getOrigin(config.get('stripe.scriptUrl'));
@@ -88,7 +90,11 @@ module.exports = function (config) {
       mediaSrc: [NONE],
       objectSrc: [NONE],
       reportUri: config.get('csp.reportUri'),
-      scriptSrc: addCdnRuleIfRequired([SELF, STRIPE_SCRIPT_URL]),
+      scriptSrc: addCdnRuleIfRequired([
+        SELF,
+        STRIPE_SCRIPT_URL,
+        PAYPAL_SCRIPT_URL,
+      ]),
       styleSrc: addCdnRuleIfRequired([SELF, UNSAFE_INLINE]),
     },
     reportOnly: false,
